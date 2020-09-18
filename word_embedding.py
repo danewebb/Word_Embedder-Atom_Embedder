@@ -17,7 +17,7 @@ import Process_sciart as PSA
 
 class Sciart_Word_Embedding():
 
-    def __init__(self, data_chunks, model_path='', labels=0, vocab=0, vocab_size=0, batch_size=20, set_epochs=1, embedding_dim=16,
+    def __init__(self, data_chunks, model_path='', labels=0, vocab=0, vocab_size=0, batch_size=20, set_epochs=1, embedding_dim=2,
                  dense1_size=16, dense2_size=1):
         """
 
