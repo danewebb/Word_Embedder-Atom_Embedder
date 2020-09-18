@@ -140,6 +140,8 @@ class Sciart_Word_Embedding():
                 trlabels = trlabels.astype('int32')
             else:
                 trlabels = self.labels
+                
+            self.train(trdata, trlabels)
 
         tf.keras.models.save_model(self.model, r'C:\Users\liqui\PycharmProjects\THESIS\venv\Lib\sciart_wordembedding\sciart_model')
 
