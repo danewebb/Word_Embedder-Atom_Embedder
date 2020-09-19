@@ -27,7 +27,7 @@ class Sciart_Word_Embedding():
         :param labels: Dummy labels = 0, every label is a zero.
         :param batch_size:
         :param set_epochs:
-        :param embedding_dim:
+        :param embedding_dim: Based on PIMS filter dimension output, (e.g. Projection.pkl)
         :param dense1_size: Size of first Dense, 'relu', layer
         :param dense2_size: Size of second Dense 'default', layer
         """
@@ -62,32 +62,35 @@ class Sciart_Word_Embedding():
             # load different model
             self.model = keras.models.load_model(model_path)
 
-    def retrieve_word_embeddings(self, model):
+    def retrieve_word_embeddings(self):
         ### Retrieve Word Embeddings
-
-        model = keras.models.load_model(model)
-
-        e = model.layers[0]
-        weights = e.get_weights()[0]
-        print(weights.shape)
-        #
         import io
-        out_v = io.open(r'sciart_wordembedding\vecs.tsv', 'w', encoding='utf-8')
-        out_m = io.open(r'sciart_wordembedding\meta.tsv', 'w', encoding='utf-8')
+
+        e = self.model.layers[0]
+        weights = e.get_weights()[0] # word embeddings
+        # print(weights.shape)
+
+        out_v = io.open(r'sciart_wordembedding\vecs.tsv', 'w', encoding='utf-8') # vector file
+        out_m = io.open(r'sciart_wordembedding\meta.tsv', 'w', encoding='utf-8') # meta file, words.
         #
-        for num, word in enumerate(self.vocab[1:], start=1):
+
+        for num, word in enumerate(self.vocab[1:], start=1): # Int 0 is in index 0 of vocab
             vec = weights[num]
             out_m.write(word + "\n")
             out_v.write('\t'.join([str(x) for x in vec]) + "\n")
+
 
         out_v.close()
         out_m.close()
 
 
+
+
     def data_to_numpy(self, data):
         # make encoded data into numpy arrays
-        train_data_arr = np.array([np.array(x) for x in data])
+        train_data_arr = np.array([np.array(x) for x in data]) # turns list into a np array
 
+        # array padding with zeros
         padded_train_data = keras.preprocessing.sequence.pad_sequences(
             train_data_arr, padding='post'
         )
@@ -99,6 +102,7 @@ class Sciart_Word_Embedding():
 
 
     def build_model(self):
+        # Build model if called
         model = keras.Sequential([
             layers.Embedding(self.vocab_size, self.embedding_dim),
             layers.GlobalAveragePooling1D(),
@@ -115,41 +119,51 @@ class Sciart_Word_Embedding():
         return model
 
     def train(self, trdata, trlabels):
-        history = model.fit(
+        # Training call
+        history = self.model.fit(
             trdata,
             trlabels,
             epochs=self.set_epochs,
             batch_size=self.batch_size,
-            shuffle=True
+            shuffle=True,
+            verbose=0
         )
 
     def voc(self):
+        # loads vocab file and grabs the size for use in Embedding layer
         with open(r'sciart_wordembedding\sciart_vocab.pkl', 'rb') as voc_file:
             vocab = pickle.load(voc_file)
         vocab_size = len(vocab)
         return vocab, vocab_size
 
-    def main(self):
 
+
+
+    def main(self):
+        """
+        Assumes self.data_chunks is a list of file paths with clean text. Main loop calls functions within the class to
+        convert the data, grab labels, and then train the network. Finally it saves the model when it completes the
+        list of chunks in self.data_chunks.
+        :return:
+        """
         for chunk in self.data_chunks:
             with open(chunk, 'rb') as chunk_file:
                 data = pickle.load(chunk_file)
             trdata, tdata_size = self.data_to_numpy(data)
-            if self.labels == 0:
+            if self.labels == 0: # if we want to use dummy labels
                 trlabels = np.zeros([tdata_size[0], 1])
                 trlabels = trlabels.astype('int32')
             else:
-                trlabels = self.labels
-                
-            self.train(trdata, trlabels)
+                trlabels = self.labels # want to train both NN and word embedding
+
+            self.train(trdata, trlabels) # Training call
 
         tf.keras.models.save_model(self.model, r'C:\Users\liqui\PycharmProjects\THESIS\venv\Lib\sciart_wordembedding\sciart_model')
 
 
 
 if __name__ == '__main__':
-
-    epochs = 60
+    epochs = 120
     report_every = 5
     data_chunks = [r'sciart_wordembedding\sciart_data_01.pkl', r'sciart_wordembedding\sciart_data_02.pkl', r'sciart_wordembedding\sciart_data_03.pkl',
                    r'sciart_wordembedding\sciart_data_04.pkl', r'sciart_wordembedding\sciart_data_05.pkl', r'sciart_wordembedding\sciart_data_06.pkl',
@@ -173,5 +187,6 @@ if __name__ == '__main__':
 
 
     # SWE.retrieve_word_embeddings(r'sciart_wordembedding\sciart_model')
+
 
 
