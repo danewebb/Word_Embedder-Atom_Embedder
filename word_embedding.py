@@ -1,16 +1,13 @@
-import os
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # info and warning messages aren't printed
 import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as plt
 from tensorflow import keras
 from tensorflow.keras import layers
-import re
 import time
 import pickle
 # import tensorflow_datasets as tfds
 
-import Process_sciart as PSA
+# import Process_sciart as PSA
 
 # tfds.disable_progress_bar()
 
@@ -53,8 +50,8 @@ class Sciart_Word_Embedding():
         if model_path == '':
             try:
                 # saved model
-                os.path.exists(r'C:\Users\liqui\PycharmProjects\THESIS\venv\Lib\sciart_model')
-                self.model = keras.models.load_model(r'C:\Users\liqui\PycharmProjects\THESIS\venv\Lib\sciart_wordembedding\sciart_model')
+                # if os.path.exists(r'C:\Users\liqui\PycharmProjects\THESIS\venv\Lib\sciart_wordembeddin\sciart_model'):
+                self.model = keras.models.load_model(r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_model')
             except:
                 # build new model
                 self.model = self.build_model()
@@ -62,16 +59,17 @@ class Sciart_Word_Embedding():
             # load different model
             self.model = keras.models.load_model(model_path)
 
-    def retrieve_word_embeddings(self):
+    def retrieve_word_embeddings(self, model_path):
         ### Retrieve Word Embeddings
         import io
 
-        e = self.model.layers[0]
+        model = keras.models.load_model(model_path)
+        e = model.layers[0]
         weights = e.get_weights()[0] # word embeddings
         # print(weights.shape)
 
-        out_v = io.open(r'sciart_wordembedding\vecs.tsv', 'w', encoding='utf-8') # vector file
-        out_m = io.open(r'sciart_wordembedding\meta.tsv', 'w', encoding='utf-8') # meta file, words.
+        out_v = io.open(r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\vecs.tsv', 'w', encoding='utf-8') # vector file
+        out_m = io.open(r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\meta.tsv', 'w', encoding='utf-8') # meta file, words.
         #
 
         for num, word in enumerate(self.vocab[1:], start=1): # Int 0 is in index 0 of vocab
@@ -83,12 +81,9 @@ class Sciart_Word_Embedding():
         out_v.close()
         out_m.close()
 
-
-
-
     def data_to_numpy(self, data):
         # make encoded data into numpy arrays
-        train_data_arr = np.array([np.array(x) for x in data]) # turns list into a np array
+        train_data_arr = np.array([np.array(x) for x in data])  # turns list into a np array
 
         # array padding with zeros
         padded_train_data = keras.preprocessing.sequence.pad_sequences(
@@ -98,8 +93,6 @@ class Sciart_Word_Embedding():
         tdata_size = padded_train_data.shape
 
         return padded_train_data, tdata_size
-
-
 
     def build_model(self):
         # Build model if called
@@ -125,17 +118,16 @@ class Sciart_Word_Embedding():
             trlabels,
             epochs=self.set_epochs,
             batch_size=self.batch_size,
-            shuffle=True,
-            verbose=0
+            shuffle=True
+            ,verbose=0
         )
 
     def voc(self):
         # loads vocab file and grabs the size for use in Embedding layer
-        with open(r'sciart_wordembedding\sciart_vocab.pkl', 'rb') as voc_file:
+        with open(r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_vocab.pkl', 'rb') as voc_file:
             vocab = pickle.load(voc_file)
         vocab_size = len(vocab)
         return vocab, vocab_size
-
 
 
 
@@ -158,35 +150,55 @@ class Sciart_Word_Embedding():
 
             self.train(trdata, trlabels) # Training call
 
-        tf.keras.models.save_model(self.model, r'C:\Users\liqui\PycharmProjects\THESIS\venv\Lib\sciart_wordembedding\sciart_model')
+        tf.keras.models.save_model(self.model, r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_model')
 
 
 
 if __name__ == '__main__':
-    epochs = 120
-    report_every = 5
-    data_chunks = [r'sciart_wordembedding\sciart_data_01.pkl', r'sciart_wordembedding\sciart_data_02.pkl', r'sciart_wordembedding\sciart_data_03.pkl',
-                   r'sciart_wordembedding\sciart_data_04.pkl', r'sciart_wordembedding\sciart_data_05.pkl', r'sciart_wordembedding\sciart_data_06.pkl',
-                   r'sciart_wordembedding\sciart_data_07.pkl', r'sciart_wordembedding\sciart_data_08.pkl', r'sciart_wordembedding\sciart_data_09.pkl',
-                   r'sciart_wordembedding\sciart_data_10.pkl', r'sciart_wordembedding\sciart_data_11.pkl', r'sciart_wordembedding\sciart_data_12.pkl']
 
-    SWE = Sciart_Word_Embedding(data_chunks)
 
-    start_time = time.time()
-    for ii in range(1, epochs+1):
-        SWE.main()
-        if ii%report_every == 0:
-            end_time = time.time()
-            print(f'{ii}/{epochs} completed')
+    with tf.device('/cpu:0'):
+        epochs = 12
+        report_every = 1
+        # data_chunks = [r'Lib/sciart_wordembedding/sciart_data_01.pkl', r'Lib/sciart_wordembedding/sciart_data_02.pkl', r'Lib/sciart_wordembedding/sciart_data_03.pkl',
+        #                r'Lib/sciart_wordembedding/sciart_data_04.pkl', r'Lib/sciart_wordembedding/sciart_data_05.pkl', r'Lib/sciart_wordembedding/sciart_data_06.pkl',
+        #                r'Lib/sciart_wordembedding/sciart_data_07.pkl', r'Lib/sciart_wordembedding/sciart_data_08.pkl', r'Lib/sciart_wordembedding/sciart_data_09.pkl',
+        #                r'Lib/sciart_wordembedding/sciart_data_10.pkl', r'Lib/sciart_wordembedding/sciart_data_11.pkl', r'Lib/sciart_wordembedding/sciart_data_12.pkl']
 
-            elapsed_time = end_time - start_time
-            reports_left = (epochs - ii)/report_every
-            eta = elapsed_time*reports_left/3600 ### Hours
-            print(f'Estimated time to completion: {eta} minutes')
-            start_time = end_time
+        data_chunks = [r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_data_01.pkl',
+                       r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_data_02.pkl',
+                       r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_data_03.pkl',
+                       r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_data_04.pkl',
+                       r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_data_05.pkl',
+                       r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_data_06.pkl',
+                       r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_data_07.pkl',
+                       r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_data_08.pkl',
+                       r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_data_09.pkl',
+                       r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_data_10.pkl',
+                       r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_data_11.pkl',
+                       r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_data_12.pkl'
+        ]
+
+        SWE = Sciart_Word_Embedding(data_chunks)
+
+        start_time = time.time()
+        for ii in range(1, epochs+1):
+            SWE.main()
+            if ii%report_every == 0:
+                end_time = time.time()
+                print(f'{ii}/{epochs} completed')
+
+                elapsed_time = end_time - start_time
+                reports_left = (epochs - ii)/report_every
+                eta = elapsed_time*reports_left/3600 ### Hours
+                print(f'Finished epoch {ii} at {time.asctime(time.localtime(time.time()))}')
+                print(f'Estimated time to completion: {eta} hours')
+                print('\n')
+                start_time = end_time
 
 
     # SWE.retrieve_word_embeddings(r'sciart_wordembedding\sciart_model')
+
 
 
 
