@@ -7,11 +7,12 @@ import nltk
 from nltk.corpus import stopwords
 
 
-class Process_Sciart():
+class Process_Sciart:
 
     def __init__(self, data_list, out_datafile_name, vocabfile=0):
         """
-        :param datafile: File location of data. Assume no labels
+        :param data_list: List of text data to be cleaned.
+        :param out_datafile_name: save location of clean data
         :param vocabfile: list of ranked vocab w/ most common in index 1 and 0 in index 0
         """
 
@@ -38,7 +39,7 @@ class Process_Sciart():
 
 
     def encode_data(self):
-        pattern = r'\w+'
+        pattern = r'\w+' # only letters
         # strip_pattern = r'[^\w]' # not letters
         # replacement = ''
 
@@ -52,7 +53,7 @@ class Process_Sciart():
             if num % report_every == 0:
                 print(f"Article {num} of {datalen}") # finished w/ article # of ___
                 print(time.asctime(time.localtime(time.time()))) # print time to get eta
-            sep_words = re.findall(pattern, line) #seperate words from string into list of strings. Only takes words w/o symbols or numbers
+            sep_words = re.findall(pattern, line) # seperate words from string into list of strings. Only takes words w/o symbols or numbers
             for word in sep_words:
                 if word in self.vocab and word not in stops:
                     # only store words that are in vocab and are not a stopword
@@ -71,6 +72,7 @@ class Process_Sciart():
         vocab_only_letters = [0]
         charstore = []
         pattern = r'[a-z]+$'
+        # finding and separating words out of list to make a list of words
         for line in self.vocab_list:
             for char in line:
                 if char == ' ':
@@ -132,6 +134,8 @@ if __name__ == '__main__':
 
     PSA = Process_Sciart(data_want, data_name)
     PSA.main()
+
+
 
 
 
