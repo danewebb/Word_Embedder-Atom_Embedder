@@ -6,7 +6,7 @@ import tensorflow as tf
 
 
 
-class Atom_Embedder():
+class Atom_Embedder:
 
     def __init__(self, weights, vocab):
         # require each paragraph to be fed in to class?
@@ -30,13 +30,19 @@ class Atom_Embedder():
 
 
     def sum_of_difference(self, atom):
-
-        #### Need to rewrite this to work with vector addition/subtraction.
+        """
+        :param atom: One atom per call
+        :return: result
+        (1, 2, 3), (4, 5, 6), (7, 8, 9)
+        ((4-1), (5-2), (6-3)) + ((7-4), (8-5), (9-6))
+        """
 
         diffs = []
-        for ii in range(0, len(atom) - 1): # -1 or -2????
+        for ii in range(0, len(atom) - 1):
+            # self.encoded_vecs: keys=encoded word, value=word embed vector
             diffs.append(self.encoded_vecs[atom[ii+1]] - self.encoded_vecs[atom[ii]])
 
+        # sums all resultant vectors and collapses list
         res = [sum(jj) for jj in zip(*diffs)]
 
         return res
@@ -44,6 +50,11 @@ class Atom_Embedder():
 
 
     def sum_atoms(self, atom):
+        """
+        :param atom: One atom per call
+        :return: result
+        (1, 2, 3) + (4, 5, 6)
+        """
         sums = []
         for ii in range(0, len(atom) - 1): # 0  or -1 ???
             sums.append(self.encoded_vecs[atom[ii]])
@@ -71,7 +82,4 @@ if __name__ == '__main__':
         atom_vecs.append(AE.sum_atoms(para))
     with open(r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\atom_vectors', 'wb') as file:
         pickle.dump(atom_vecs, file)
-
-
-
 
