@@ -1,3 +1,4 @@
+import os
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # info and warning messages aren't printed
 import tensorflow as tf
 import numpy as np
@@ -14,16 +15,18 @@ import pickle
 
 class Sciart_Word_Embedding():
 
-    def __init__(self, data_chunks, model_path='', labels=0, vocab=0, vocab_size=0, batch_size=20, set_epochs=1, embedding_dim=2,
+    def __init__(self, data_chunks, model_path='', labels=0, vocab='', vocab_size=0, batch_size=20, set_epochs=1, embedding_dim=2,
                  dense1_size=16, dense2_size=1):
         """
 
         :param data_chunks: List of data file paths. Break up data so memory doesn't overflow.
-        :param model: First time through leave blank but once model is save in path, change zero to model path.
-        :param vocab_size: If we are using scientific papers vocab built in Process_sciart, leave vocab_size=0
+        :param model: First time through leave blank but once model is saves in path, change, '', to model path.
         :param labels: Dummy labels = 0, every label is a zero.
+        :param vocab: Path for corpus vocab. Leave as, '', for scientific papers
+        :param vocab_size: If we are using scientific papers vocab built in Process_sciart, leave vocab_size=0
+
         :param batch_size:
-        :param set_epochs:
+        :param set_epochs: Leave as 1 if running from class.
         :param embedding_dim: Based on PIMS filter dimension output, (e.g. Projection.pkl)
         :param dense1_size: Size of first Dense, 'relu', layer
         :param dense2_size: Size of second Dense 'default', layer
@@ -35,6 +38,7 @@ class Sciart_Word_Embedding():
             # get vocab_size from 'sciart_vocab.pkl'
             self.vocab, self.vocab_size = self.voc()
         else:
+            # use another vocab
             self.vocab = vocab
             self.vocab_size = len(self.vocab)
 
@@ -49,9 +53,9 @@ class Sciart_Word_Embedding():
 
         if model_path == '':
             try:
-                # saved model
-                # if os.path.exists(r'C:\Users\liqui\PycharmProjects\THESIS\venv\Lib\sciart_wordembeddin\sciart_model'):
-                self.model = keras.models.load_model(r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_model')
+                # use saved model
+                if os.path.exists(r'C:\Users\liqui\PycharmProjects\THESIS\venv\Lib\sciart_wordembeddin\sciart_model'):
+                    self.model = keras.models.load_model(r'C:\Users\liqui\PycharmProjects\Word_Embeddings\Lib\sciart_wordembedding\sciart_model')
             except:
                 # build new model
                 self.model = self.build_model()
@@ -63,6 +67,7 @@ class Sciart_Word_Embedding():
         ### Retrieve Word Embeddings
         import io
 
+        # load model
         model = keras.models.load_model(model_path)
         e = model.layers[0]
         weights = e.get_weights()[0] # word embeddings
@@ -77,7 +82,7 @@ class Sciart_Word_Embedding():
             out_m.write(word + "\n")
             out_v.write('\t'.join([str(x) for x in vec]) + "\n")
 
-
+        # save
         out_v.close()
         out_m.close()
 
@@ -118,8 +123,8 @@ class Sciart_Word_Embedding():
             trlabels,
             epochs=self.set_epochs,
             batch_size=self.batch_size,
-            shuffle=True
-            ,verbose=0
+            shuffle=True # shuffles batches
+            ,verbose=0 # supresses progress bar
         )
 
     def voc(self):
@@ -158,7 +163,7 @@ if __name__ == '__main__':
 
 
     with tf.device('/cpu:0'):
-        epochs = 12
+        epochs = 14
         report_every = 1
         # data_chunks = [r'Lib/sciart_wordembedding/sciart_data_01.pkl', r'Lib/sciart_wordembedding/sciart_data_02.pkl', r'Lib/sciart_wordembedding/sciart_data_03.pkl',
         #                r'Lib/sciart_wordembedding/sciart_data_04.pkl', r'Lib/sciart_wordembedding/sciart_data_05.pkl', r'Lib/sciart_wordembedding/sciart_data_06.pkl',
@@ -197,8 +202,5 @@ if __name__ == '__main__':
                 start_time = end_time
 
 
-    # SWE.retrieve_word_embeddings(r'sciart_wordembedding\sciart_model')
-
-
-
+    # SWE.retrieve_word_embeddings(r'sciart_wordembedding\sciart_model') # extract word embeddings
 
