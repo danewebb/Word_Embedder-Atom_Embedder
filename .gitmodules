@@ -1,0 +1,6 @@
+[submodule "Lib/pims-filter"]
+	path = Lib/pims-filter
+	url = https://github.com/ricopicone/pims-filter
+[submodule "Lib/dialectica-pimsifier"]
+	path = Lib/dialectica-pimsifier
+	url = https://github.com/ricopicone/dialectica-pimsifier
